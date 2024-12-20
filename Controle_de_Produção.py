@@ -171,7 +171,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
     final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prod acum')}
 
-    # Add a check to avoid division by zero
+    # Adicionar verificação de zero
     normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values and final_prev_values[key.replace('prod', 'prev')] != 0 else 0 for key, value in final_real_values.items()}
     normalized_prev_values = {key: 100 for key in final_prev_values.keys()}
     final_prev_df = pd.DataFrame([ {'Mes': selected_mes, 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
@@ -204,8 +204,10 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     final_df['Total Previsto'] = final_df['Produção']
 
-    # Filtrar para remover serviços com "Realizado" igual a zero
-    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & (final_df['Produção'] == 0))]
+    # Filtrar para remover serviços com "Realizado", "prod acum" ou "prev acum" igual a zero
+    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & (final_df['Produção'] == 0) & 
+                         (final_df['Serviço'].map(lambda x: final_real_values[f'prod acum {x.split()[1]}'] == 0) &
+                          final_df['Serviço'].map(lambda x: final_prev_values[f'prev acum {x.split()[1]}'] == 0)))]
 
     # Alterar as cores das barras
     color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} 
@@ -226,6 +228,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
+
 
     print(final_df_final)
 
