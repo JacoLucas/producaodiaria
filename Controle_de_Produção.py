@@ -168,8 +168,8 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     else:
         combined_summary = production_data[selected_obra]
 
-    final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns else 0 for key in comparacao_cols if key.startswith('prev acum')}
-    final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns else 0 for key in comparacao_cols if key.startswith('prod acum')}
+    final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
+    final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prod acum')}
 
     normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values else 0 for key, value in final_real_values.items()}
     normalized_prev_values = {key: 100 for key in final_prev_values.keys()}
