@@ -6,22 +6,53 @@ import numpy as np
 from dash import Dash, html, dcc, Output, Input
 import plotly.express as px
 
-#### LOAD FROM GITHUB REPOSITORIES ####
+#### LOAD FROM LOCAL FILE ####
 
 def load_production_files():
-    directory = os.path.dirname(os.path.abspath(__file__))
-    files = glob.glob(os.path.join(directory, "Produção_Diária_Obra_*.xlsx"))
-    data = {}
-    for file in files:
-        obra_id = os.path.basename(file).split('_')[-1].split('.')[0]
-        df = pd.read_excel(file)
-        df['Dias'] = pd.to_datetime(df['Dias'])
-        df['Mes'] = df['Dias'].dt.to_period('M')
-        df['Semana'] = df['Dias'].dt.to_period('W')
-        df['Obra'] = f'Obra {obra_id}'
-        print(f"{file} - {len(df)} linhas")
-        data[obra_id] = df
-    return data
+    current_folder = "C:/Users/ljaco/Documents/0-Planejamento_e_Custos/Produção Modelo"
+    file_pattern = re.compile(r'Produção_Diária_.*\.xlsx')
+    production_files = {}
+    
+    def search_files(folder):
+        for file_name in os.listdir(folder):
+            if file_pattern.match(file_name):
+                obra_id = file_name.split('_')[-1].split('.')[0]
+                df = pd.read_excel(os.path.join(folder, file_name))
+                df['Dias'] = pd.to_datetime(df['Dias'])
+                df['Mes'] = df['Dias'].dt.to_period('M')
+                df['Semana'] = df['Dias'].dt.to_period('W')
+                df['Obra'] = f'Obra {obra_id}'
+                
+                # Verificar e adicionar colunas 'prod acum' e 'prev acum' se não estiverem presentes
+                if 'prod acum' not in df.columns:
+                    df['prod acum'] = 0
+                if 'prev acum' not in df.columns:
+                    df['prev acum'] = 0
+
+                print(f"{file_name} - {len(df)} linhas")
+                production_files[obra_id] = df
+
+    search_files(current_folder)
+
+    return production_files
+
+
+#### LOAD FROM GITHUB REPOSITORIES ####
+
+#def load_production_files():
+#    directory = os.path.dirname(os.path.abspath(__file__))
+#    files = glob.glob(os.path.join(directory, "Produção_Diária_Obra_*.xlsx"))
+#    data = {}
+#    for file in files:
+#        obra_id = os.path.basename(file).split('_')[-1].split('.')[0]
+#        df = pd.read_excel(file)
+#        df['Dias'] = pd.to_datetime(df['Dias'])
+#        df['Mes'] = df['Dias'].dt.to_period('M')
+#        df['Semana'] = df['Dias'].dt.to_period('W')
+#        df['Obra'] = f'Obra {obra_id}'
+#        print(f"{file} - {len(df)} linhas")
+#        data[obra_id] = df
+#    return data
 
 production_data = load_production_files()
 
@@ -168,27 +199,27 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     else:
         combined_summary = production_data[selected_obra]
 
-    # Obter o valor prev acum do último dia de cada mês e o valor total
-    last_day_of_month = combined_summary.groupby('Mes').apply(lambda x: x.loc[x['Dias'].idxmax()])
-    final_prev_values = {key: last_day_of_month[key].iloc[-1] if key in last_day_of_month.columns and not last_day_of_month[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
-    final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prod acum')}
+    final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns else 0 for key in comparacao_cols if key.startswith('prev acum')}
+    final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns else 0 for key in comparacao_cols if key.startswith('prod acum')}
 
-    # Adicionar verificação de zero e tratar valores nulos
-    normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values and final_prev_values[key.replace('prod', 'prev')] != 0 else 0 for key, value in final_real_values.items()}
+    normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values else 0 for key, value in final_real_values.items()}
     normalized_prev_values = {key: 100 for key in final_prev_values.keys()}
-    final_prev_df = pd.DataFrame([ {'Mes': selected_mes, 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
-                                    for key, value in normalized_prev_values.items()
-                                ])
-    final_real_df = pd.DataFrame([ {'Mes': selected_mes, 'Tipo': 'Realizado', 'Produção': value, 'Serviço': key.split()[2]}
-                                  for key, value in normalized_real_values.items()
-                                ])
-    final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
-    final_df['Produção (%)'] = final_df['Produção']
+
+    final_prev_df = pd.DataFrame([
+        {'Mes': selected_mes, 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
+        for key, value in normalized_prev_values.items()
+    ])
+    final_real_df = pd.DataFrame([
+        {'Mes': selected_mes, 'Tipo': 'Realizado', 'Produção': value, 'Serviço': key.split()[2]}
+        for key, value in normalized_real_values.items()
+    ])
     final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
 
-    # Adicionar coluna de porcentagem relativa com base no último dia de cada mês
+    final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
+
+    # Adicionar coluna de porcentagem relativa
     final_df['Acumulado Previsto'] = final_df.apply(
-        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0 else 0,
+        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values else row['Produção'],
         axis=1
     )
 
@@ -206,14 +237,8 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     final_df['Total Previsto'] = final_df['Produção']
 
-    # Filtrar para remover serviços com "Realizado", "prod acum" ou "prev acum" igual a zero
-    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & 
-                         (final_df['Produção'] == 0) & 
-                         (final_df['Serviço'].map(lambda x: final_real_values.get(f'prod acum {x.split()[1]}', 0) == 0) & 
-                          final_df['Serviço'].map(lambda x: final_prev_values.get(f'prev acum {x.split()[1]}', 0) == 0)))]
-
     # Alterar as cores das barras
-    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} 
+    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} ############################
     
     # Ajustar o DataFrame para o gráfico de barras
     final_df_realizado = final_df[final_df['Tipo'] == 'Realizado'].copy()
@@ -223,14 +248,19 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df_previsto_relative['Status:'] = 'Acumulado Previsto'
 
     final_df_final = pd.concat([final_df_realizado, final_df_previsto, final_df_previsto_relative], ignore_index=True)
-    final_df_final.loc[final_df_final['Status:'].isna(), 'Status:'] = 'Realizado'
+    final_df_final['Status:'].fillna('Realizado', inplace=True)  # Adicionar 'Realizado' para dados NaN em 'Status:'
     final_df_final['Produção (%)'] = final_df_final.apply(
         lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
         axis=1
     )
+    
+
 
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
+
+
+    print(final_df_final)
 
     if selected_obra != 'todas':
         # Criar gráfico de barras
@@ -240,8 +270,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
             y='Produção (%)',
             color='Status:',
             barmode='group',
-            title='Comparação de Produção Acumulada e Porcentagem Relativa',
-            color_discrete_map=color_discrete_map
+            title='Comparação de Produção Acumulada e Porcentagem Relativa'
         )
 
         fig_comparativo.update_layout(bargroupgap=0.1)
@@ -272,4 +301,3 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
 if __name__ == '__main__':
     app.run_server(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 8050)))
-
