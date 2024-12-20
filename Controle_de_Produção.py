@@ -6,53 +6,22 @@ import numpy as np
 from dash import Dash, html, dcc, Output, Input
 import plotly.express as px
 
-#### LOAD FROM LOCAL FILE ####
-
-def load_production_files():
-    current_folder = "C:/Users/ljaco/Documents/0-Planejamento_e_Custos/Produção Modelo"
-    file_pattern = re.compile(r'Produção_Diária_.*\.xlsx')
-    production_files = {}
-    
-    def search_files(folder):
-        for file_name in os.listdir(folder):
-            if file_pattern.match(file_name):
-                obra_id = file_name.split('_')[-1].split('.')[0]
-                df = pd.read_excel(os.path.join(folder, file_name))
-                df['Dias'] = pd.to_datetime(df['Dias'])
-                df['Mes'] = df['Dias'].dt.to_period('M')
-                df['Semana'] = df['Dias'].dt.to_period('W')
-                df['Obra'] = f'Obra {obra_id}'
-                
-                # Verificar e adicionar colunas 'prod acum' e 'prev acum' se não estiverem presentes
-                if 'prod acum' not in df.columns:
-                    df['prod acum'] = 0
-                if 'prev acum' not in df.columns:
-                    df['prev acum'] = 0
-
-                print(f"{file_name} - {len(df)} linhas")
-                production_files[obra_id] = df
-
-    search_files(current_folder)
-
-    return production_files
-
-
 #### LOAD FROM GITHUB REPOSITORIES ####
 
-#def load_production_files():
-#    directory = os.path.dirname(os.path.abspath(__file__))
-#    files = glob.glob(os.path.join(directory, "Produção_Diária_Obra_*.xlsx"))
-#    data = {}
-#    for file in files:
-#        obra_id = os.path.basename(file).split('_')[-1].split('.')[0]
-#        df = pd.read_excel(file)
-#        df['Dias'] = pd.to_datetime(df['Dias'])
-#        df['Mes'] = df['Dias'].dt.to_period('M')
-#        df['Semana'] = df['Dias'].dt.to_period('W')
-#        df['Obra'] = f'Obra {obra_id}'
-#        print(f"{file} - {len(df)} linhas")
-#        data[obra_id] = df
-#    return data
+def load_production_files():
+    directory = os.path.dirname(os.path.abspath(__file__))
+    files = glob.glob(os.path.join(directory, "Produção_Diária_Obra_*.xlsx"))
+    data = {}
+    for file in files:
+        obra_id = os.path.basename(file).split('_')[-1].split('.')[0]
+        df = pd.read_excel(file)
+        df['Dias'] = pd.to_datetime(df['Dias'])
+        df['Mes'] = df['Dias'].dt.to_period('M')
+        df['Semana'] = df['Dias'].dt.to_period('W')
+        df['Obra'] = f'Obra {obra_id}'
+        print(f"{file} - {len(df)} linhas")
+        data[obra_id] = df
+    return data
 
 production_data = load_production_files()
 
