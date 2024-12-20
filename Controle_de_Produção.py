@@ -154,13 +154,13 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
         'prod acum 1': 'Corte (m³)',
         'prod acum 2': 'Aterro (m³)',
         'prod acum 3': 'Rachão (ton.)',
-        'prod acum 4': 'Tubos e Aduelas (un)',
-        'prod acum 5': 'Caixas e PVs (un)',
+        'prod acum 4': 'Caixas e PVs (un)',
+        'prod acum 5': 'Escavação de Drenagem (m³)',
         'prev acum 1': 'Previsto Corte (m³)',
         'prev acum 2': 'Previsto Aterro (m³)',
         'prev acum 3': 'Previsto Rachão (ton.)',
-        'prev acum 4': 'Previsto Tubos e Aduelas (un)',
-        'prev acum 5': 'Previsto Caixas e PVs (un)'
+        'prev acum 4': 'Previsto Caixas e PVs (un)',
+        'prev acum 5': 'Previsto Escavação de Drenagem (m³)'
     }
 
     if selected_obra == 'todas':
