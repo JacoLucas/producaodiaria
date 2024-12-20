@@ -222,10 +222,6 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     final_df_final = pd.concat([final_df_realizado, final_df_previsto, final_df_previsto_relative], ignore_index=True)
     final_df_final['Status:'].fillna('Realizado', inplace=True)  # Adicionar 'Realizado' para dados NaN em 'Status:'
-    final_df_final['Produção (%)'] = final_df_final.apply(
-        lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
-        axis=1
-    )
 
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
