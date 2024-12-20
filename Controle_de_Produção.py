@@ -168,7 +168,9 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     else:
         combined_summary = production_data[selected_obra]
 
-    final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
+    # Obter o valor prev acum do último dia de cada mês e o valor total
+    last_day_of_month = combined_summary.groupby('Mes').apply(lambda x: x.loc[x['Dias'].idxmax()])
+    final_prev_values = {key: last_day_of_month[key].iloc[-1] if key in last_day_of_month.columns and not last_day_of_month[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
     final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prod acum')}
 
     # Adicionar verificação de zero e tratar valores nulos
