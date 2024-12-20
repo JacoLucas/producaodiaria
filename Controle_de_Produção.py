@@ -186,7 +186,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     # Adicionar coluna de porcentagem relativa
     final_df['Acumulado Previsto'] = final_df.apply(
-        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values else row['Produção'],
+        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0 else row['Produção'],
         axis=1
     )
 
