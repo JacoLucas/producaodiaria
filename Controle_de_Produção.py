@@ -171,7 +171,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_prev_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prev acum')}
     final_real_values = {key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 for key in comparacao_cols if key.startswith('prod acum')}
 
-    # Adicionar verificação de zero
+    # Adicionar verificação de zero e tratar valores nulos
     normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values and final_prev_values[key.replace('prod', 'prev')] != 0 else 0 for key, value in final_real_values.items()}
     normalized_prev_values = {key: 100 for key in final_prev_values.keys()}
     final_prev_df = pd.DataFrame([ {'Mes': selected_mes, 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
@@ -186,7 +186,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     # Adicionar coluna de porcentagem relativa
     final_df['Acumulado Previsto'] = final_df.apply(
-        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0 else row['Produção'],
+        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0 else 0,
         axis=1
     )
 
