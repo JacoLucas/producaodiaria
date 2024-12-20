@@ -154,13 +154,13 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
         'prod acum 1': 'Corte (m³)',
         'prod acum 2': 'Aterro (m³)',
         'prod acum 3': 'Rachão (ton.)',
-        'prod acum 4': 'Caixas e PVs (un)',
-        'prod acum 5': 'Escavação de Drenagem (m³)',
+        'prod acum 4': 'Tubos e Aduelas (un)',
+        'prod acum 5': 'Caixas e PVs (un)',
         'prev acum 1': 'Previsto Corte (m³)',
         'prev acum 2': 'Previsto Aterro (m³)',
         'prev acum 3': 'Previsto Rachão (ton.)',
-        'prev acum 4': 'Previsto Caixas e PVs (un)',
-        'prev acum 5': 'Previsto Escavação de Drenagem (m³)'
+        'prev acum 4': 'Previsto Tubos e Aduelas (un)',
+        'prev acum 5': 'Previsto Caixas e PVs (un)'
     }
 
     if selected_obra == 'todas':
@@ -205,9 +205,10 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df['Total Previsto'] = final_df['Produção']
 
     # Filtrar para remover serviços com "Realizado", "prod acum" ou "prev acum" igual a zero
-    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & (final_df['Produção'] == 0) & 
-                         (final_df['Serviço'].map(lambda x: final_real_values[f'prod acum {x.split()[1]}'] == 0) &
-                          final_df['Serviço'].map(lambda x: final_prev_values[f'prev acum {x.split()[1]}'] == 0)))]
+    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & 
+                         (final_df['Produção'] == 0) & 
+                         (final_df['Serviço'].map(lambda x: final_real_values.get(f'prod acum {x.split()[1]}', 0) == 0) & 
+                          final_df['Serviço'].map(lambda x: final_prev_values.get(f'prev acum {x.split()[1]}', 0) == 0)))]
 
     # Alterar as cores das barras
     color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} 
@@ -228,9 +229,6 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
-
-
-    print(final_df_final)
 
     if selected_obra != 'todas':
         # Criar gráfico de barras
