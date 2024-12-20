@@ -204,8 +204,11 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     final_df['Total Previsto'] = final_df['Produção']
 
+    # Filtrar para remover serviços com "Realizado" igual a zero
+    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & (final_df['Produção'] == 0))]
+
     # Alterar as cores das barras
-    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} ############################
+    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} 
     
     # Ajustar o DataFrame para o gráfico de barras
     final_df_realizado = final_df[final_df['Tipo'] == 'Realizado'].copy()
@@ -220,12 +223,9 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
         lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
         axis=1
     )
-    
-
 
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
-
 
     print(final_df_final)
 
