@@ -1,1 +1,1 @@
-web: gunicorn app:Controle_de_Produção
+web: python Controle_de_Produção.py
