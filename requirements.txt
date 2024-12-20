@@ -1,7 +1,7 @@
-os
-re
-glob
+dash
 pandas
 numpy
-dash
+plotly
+gunicorn
+openpyxl
 plotly.express
