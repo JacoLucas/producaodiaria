@@ -239,7 +239,8 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
             y='Produção (%)',
             color='Status:',
             barmode='group',
-            title='Comparação de Produção Acumulada e Porcentagem Relativa'
+            title='Comparação de Produção Acumulada e Porcentagem Relativa',
+            color_discrete_map=color_discrete_map
         )
 
         fig_comparativo.update_layout(bargroupgap=0.1)
