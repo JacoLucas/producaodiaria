@@ -184,7 +184,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df['Produção (%)'] = final_df['Produção']
     final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
 
-    # Adicionar coluna de porcentagem relativa
+    # Adicionar coluna de porcentagem relativa com base no último dia de cada mês
     final_df['Acumulado Previsto'] = final_df.apply(
         lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0 else 0,
         axis=1
@@ -221,13 +221,12 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df_previsto_relative['Status:'] = 'Acumulado Previsto'
 
     final_df_final = pd.concat([final_df_realizado, final_df_previsto, final_df_previsto_relative], ignore_index=True)
-    final_df_final['Status:'].fillna('Realizado', inplace=True)  # Adicionar 'Realizado' para dados NaN em 'Status:'
+    final_df_final.loc[final_df_final['Status:'].isna(), 'Status:'] = 'Realizado'
     final_df_final['Produção (%)'] = final_df_final.apply(
         lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
         axis=1
     )
 
-    
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
 
@@ -271,3 +270,4 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
 if __name__ == '__main__':
     app.run_server(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 8050)))
+
