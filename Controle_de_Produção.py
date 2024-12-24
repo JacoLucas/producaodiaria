@@ -168,36 +168,100 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     else:
         combined_summary = production_data[selected_obra]
 
+    # Função para obter o último valor não nulo de uma coluna
+    def get_last_valid_value(column):
+        return column.dropna().iloc[-1] if not column.dropna().empty else 0
+
+    # Obtendo os últimos valores válidos para 'prev acum' e 'prod acum'
     final_prev_values = {
-        key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 
+        key: get_last_valid_value(combined_summary[key])
+        if key in combined_summary.columns else 0
         for key in comparacao_cols if key.startswith('prev acum')
     }
 
     final_real_values = {
-        key: combined_summary[key].dropna().iloc[-1] if key in combined_summary.columns and not combined_summary[key].dropna().empty else 0 
+        key: get_last_valid_value(combined_summary[key])
+        if key in combined_summary.columns else 0
         for key in comparacao_cols if key.startswith('prod acum')
     }
 
-    normalized_real_values = {key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100 if key.replace('prod', 'prev') in final_prev_values else 0 for key, value in final_real_values.items()}
+    # Adicionar verificação de zero e tratar valores nulos
+    normalized_real_values = {
+        key: (value / final_prev_values[key.replace('prod', 'prev')]) * 100
+        if key.replace('prod', 'prev') in final_prev_values and final_prev_values[key.replace('prod', 'prev')] != 0
+        else 0 for key, value in final_real_values.items()
+    }
     normalized_prev_values = {key: 100 for key in final_prev_values.keys()}
 
     final_prev_df = pd.DataFrame([
-        {'Mes': selected_mes, 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
+        {'Mes': combined_summary['Mes'].iloc[-1], 'Tipo': 'Previsto', 'Produção': value, 'Serviço': key.split()[2]}
         for key, value in normalized_prev_values.items()
     ])
     final_real_df = pd.DataFrame([
-        {'Mes': selected_mes, 'Tipo': 'Realizado', 'Produção': value, 'Serviço': key.split()[2]}
+        {'Mes': combined_summary['Mes'].iloc[-1], 'Tipo': 'Realizado', 'Produção': value, 'Serviço': key.split()[2]}
         for key, value in normalized_real_values.items()
     ])
-    final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
 
     final_df = pd.concat([final_prev_df, final_real_df], ignore_index=True)
+    final_df['Produção (%)'] = final_df['Produção']
 
-    # Adicionar coluna de porcentagem relativa
+    # Obter o valor prev acum do último dia de cada mês e o valor total
+    last_day_of_month = combined_summary.groupby('Mes', group_keys=False).apply(lambda x: x.loc[x['Dias'].idxmax()])
+    final_prev_values = {
+        key: get_last_valid_value(last_day_of_month[key])
+        if key in last_day_of_month.columns else 0
+        for key in comparacao_cols if key.startswith('prev acum')
+    }
+
+    # Adicionar coluna de porcentagem relativa com base no último dia de cada mês
     final_df['Acumulado Previsto'] = final_df.apply(
-        lambda row: (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100 if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values else row['Produção'],
+        lambda row: (
+            (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100
+            if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0
+            else 0
+        ),
         axis=1
     )
+
+    serviço_labels = {
+        '1': 'Corte (m³)',
+        '2': 'Aterro (m³)',
+        '3': 'Rachão (ton.)',
+        '4': 'Tubos e Aduelas (un)',
+        '5': 'Caixas e PVs (un)'
+    }
+    final_df['Serviço'] = final_df['Serviço'].map(serviço_labels)
+
+    # Definir a ordem das barras para trazer 'Realizado' para frente de 'Previsto'
+    final_df['Tipo'] = pd.Categorical(final_df['Tipo'], categories=['Realizado', 'Previsto'], ordered=True)
+
+    final_df['Total Previsto'] = final_df['Produção']
+
+    # Filtrar para remover serviços com "Realizado", "prod acum" ou "prev acum" igual a zero
+    final_df = final_df[~((final_df['Tipo'] == 'Realizado') & 
+                         (final_df['Produção'] == 0) & 
+                         (final_df['Serviço'].map(lambda x: final_real_values.get(f'prod acum {x.split()[1]}', 0) == 0) & 
+                          final_df['Serviço'].map(lambda x: final_prev_values.get(f'prev acum {x.split()[1]}', 0) == 0)))]
+
+    # Alterar as cores das barras
+    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} 
+    
+    # Ajustar o DataFrame para o gráfico de barras
+    final_df_realizado = final_df[final_df['Tipo'] == 'Realizado'].copy()
+    final_df_previsto = final_df[final_df['Tipo'] == 'Previsto'].copy()
+    final_df_previsto['Status:'] = 'Total Previsto'
+    final_df_previsto_relative = final_df[final_df['Tipo'] == 'Previsto'].copy()
+    final_df_previsto_relative['Status:'] = 'Acumulado Previsto'
+
+    final_df_final = pd.concat([final_df_realizado, final_df_previsto, final_df_previsto_relative], ignore_index=True)
+    final_df_final.loc[final_df_final['Status:'].isna(), 'Status:'] = 'Realizado'
+    final_df_final['Produção (%)'] = final_df_final.apply(
+        lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
+        axis=1
+    )
+
+    # Organizar final_df_final para valores de Value crescentes
+    final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
 
     serviço_labels = {
         '1': 'Corte (m³)',
