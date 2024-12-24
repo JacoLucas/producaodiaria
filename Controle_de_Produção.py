@@ -206,7 +206,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df['Produção (%)'] = final_df['Produção']
 
     # Obter o valor prev acum do último dia de cada mês e o valor total
-    last_day_of_month = filtered_df.groupby('Mes', group_keys=False, include_groups=False).apply(lambda x: x.loc[x['Dias'].idxmax()]).reset_index(drop=True)
+    last_day_of_month = filtered_df.groupby('Mes', group_keys=False).apply(lambda x: x.loc[x['Dias'].idxmax()]).reset_index(drop=True)
     final_prev_values = {
         key: get_last_valid_value(last_day_of_month[key])
         if key in last_day_of_month.columns else 0
