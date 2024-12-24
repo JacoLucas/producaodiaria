@@ -266,43 +266,6 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     # Organizar final_df_final para valores de Value crescentes
     final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
 
-    serviço_labels = {
-        '1': 'Corte (m³)',
-        '2': 'Aterro (m³)',
-        '3': 'Rachão (ton.)',
-        '4': 'Tubos e Aduelas (un)',
-        '5': 'Caixas e PVs (un)'
-    }
-    final_df['Serviço'] = final_df['Serviço'].map(serviço_labels)
-
-    # Definir a ordem das barras para trazer 'Realizado' para frente de 'Previsto'
-    final_df['Tipo'] = pd.Categorical(final_df['Tipo'], categories=['Realizado', 'Previsto'], ordered=True)
-
-    final_df['Total Previsto'] = final_df['Produção']
-
-    # Alterar as cores das barras
-    color_discrete_map = {'Total Previsto': '#FF0000', 'Realizado': '#0099FF', 'Acumulado Previsto': '#00CC00'} ############################
-    
-    # Ajustar o DataFrame para o gráfico de barras
-    final_df_realizado = final_df[final_df['Tipo'] == 'Realizado'].copy()
-    final_df_previsto = final_df[final_df['Tipo'] == 'Previsto'].copy()
-    final_df_previsto['Status:'] = 'Total Previsto'
-    final_df_previsto_relative = final_df[final_df['Tipo'] == 'Previsto'].copy()
-    final_df_previsto_relative['Status:'] = 'Acumulado Previsto'
-
-    final_df_final = pd.concat([final_df_realizado, final_df_previsto, final_df_previsto_relative], ignore_index=True)
-    final_df_final['Status:'].fillna('Realizado', inplace=True)  # Adicionar 'Realizado' para dados NaN em 'Status:'
-    final_df_final['Produção (%)'] = final_df_final.apply(
-        lambda row: row['Acumulado Previsto'] if row['Status:'] == 'Acumulado Previsto' else row['Total Previsto'],
-        axis=1
-    )
-    
-
-
-    # Organizar final_df_final para valores de Value crescentes
-    final_df_final = final_df_final.sort_values(by='Produção (%)', ascending=True)
-
-
     print(final_df_final)
 
     if selected_obra != 'todas':
