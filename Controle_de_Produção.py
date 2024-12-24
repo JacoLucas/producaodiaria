@@ -206,7 +206,7 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
     final_df['Produção (%)'] = final_df['Produção']
 
     # Obter o valor prev acum do último dia de cada mês e o valor total
-    last_day_of_month = combined_summary.groupby('Mes', group_keys=False).apply(lambda x: x.loc[x['Dias'].idxmax()])
+    last_day_of_month = filtered_df.groupby('Mes', group_keys=False).apply(lambda x: x.loc[x['Dias'].idxmax()])
     final_prev_values = {
         key: get_last_valid_value(last_day_of_month[key])
         if key in last_day_of_month.columns else 0
@@ -215,14 +215,12 @@ def update_graphs_and_table(selected_atividade, selected_obra, selected_mes, sel
 
     # Adicionar coluna de porcentagem relativa com base no último dia de cada mês
     final_df['Acumulado Previsto'] = final_df.apply(
-        lambda row: (
-            (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100
-            if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0
-            else 0
-        ),
-        axis=1
+    lambda row: (
+        (row['Produção'] / final_prev_values[f'prev acum {row["Serviço"]}']) * 100
+        if row['Tipo'] == 'Previsto' and f'prev acum {row["Serviço"]}' in final_prev_values and final_prev_values[f'prev acum {row["Serviço"]}'] != 0
+        else 0),
+    axis=1
     )
-
     serviço_labels = {
         '1': 'Corte (m³)',
         '2': 'Aterro (m³)',
