@@ -5,3 +5,5 @@ plotly
 gunicorn
 openpyxl
 plotly.express
+requests
+calendar
