@@ -6,4 +6,3 @@ gunicorn
 openpyxl
 plotly.express
 requests
-calendar
