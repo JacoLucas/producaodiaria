@@ -206,14 +206,21 @@ def update_charts(selected_month, selected_services, obra_name):
                          'Realizado Mensal': '#0066CC'
                      })
 
+    # Função para converter valores para float, tratando células nulas e caracteres especiais
+    def safe_float_conversion(value):
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return 0.0
+    
     # Criar a tabela com os valores reais e bordas nas células
     table_header = [html.Thead(html.Tr([html.Th('Serviço'), html.Th('Total Previsto'), 
                                         html.Th('Previsto Mensal'), html.Th('Realizado Mensal')]))]
     table_body = [html.Tbody([
         html.Tr([html.Td(row['Serviço'], style={'border': '1px solid black'}), 
-                 html.Td(f"{float(row['Total Previsto']):.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{float(row['Previsto Mensal']):.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{float(row['Realizado Mensal']):.4f}", style={'border': '1px solid black'})])
+                 html.Td(f"{safe_float_conversion(row['Total Previsto']):.4f}", style={'border': '1px solid black'}), 
+                 html.Td(f"{safe_float_conversion(row['Previsto Mensal']):.4f}", style={'border': '1px solid black'}), 
+                 html.Td(f"{safe_float_conversion(row['Realizado Mensal']):.4f}", style={'border': '1px solid black'})])
         for row in table_data
     ])]
     table = html.Table(table_header + table_body, style={'width': '100%', 'textAlign': 'center', 'borderCollapse': 'collapse'})
