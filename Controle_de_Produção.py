@@ -211,9 +211,9 @@ def update_charts(selected_month, selected_services, obra_name):
                                         html.Th('Previsto Mensal'), html.Th('Realizado Mensal')]))]
     table_body = [html.Tbody([
         html.Tr([html.Td(row['Serviço'], style={'border': '1px solid black'}), 
-                 html.Td(f"{row['Total Previsto']:.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{row['Previsto Mensal']:.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{row['Realizado Mensal']:.4f}", style={'border': '1px solid black'})])
+                 html.Td(f"{float(row['Total Previsto']):.4f}", style={'border': '1px solid black'}), 
+                 html.Td(f"{float(row['Previsto Mensal']):.4f}", style={'border': '1px solid black'}), 
+                 html.Td(f"{float(row['Realizado Mensal']):.4f}", style={'border': '1px solid black'})])
         for row in table_data
     ])]
     table = html.Table(table_header + table_body, style={'width': '100%', 'textAlign': 'center', 'borderCollapse': 'collapse'})
