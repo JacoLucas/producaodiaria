@@ -149,7 +149,13 @@ def update_charts(selected_month, selected_services, obra_name):
     def calculate_monthly_percentage(df, total_column, total):
         last_day_of_month = df['Dias'].max()
         monthly_total = df.loc[df['Dias'] == last_day_of_month, total_column].values[0]
-        total = float(total)  # Converter total para float
+    
+        # Verificar se total pode ser convertido para float
+        try:
+            total = float(total)
+        except (ValueError, TypeError):
+            total = 0.0  # Transformar células nulas e caracteres especiais em zero (float)
+    
         if total == 0:
             return 0
         return (monthly_total / total) * 100
