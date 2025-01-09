@@ -210,6 +210,6 @@ def update_charts(selected_month, selected_services, obra_name):
 
     return line_fig, bar_fig, table
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
-
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
