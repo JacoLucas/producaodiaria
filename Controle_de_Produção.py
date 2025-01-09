@@ -28,8 +28,7 @@ def get_data_from_github(url):
 
 # Dropdown para selecionar a obra
 app.layout = html.Div([
-    html.H1('Análise da Produção Diária'
-    ),
+    html.H1('Análise da Produção Diária'),
     dcc.Dropdown(
         id='obra-dropdown',
         options=[{'label': name, 'value': name} for name in file_urls.keys()],
