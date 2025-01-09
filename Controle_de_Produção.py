@@ -149,6 +149,8 @@ def update_charts(selected_month, selected_services, obra_name):
     def calculate_monthly_percentage(df, total_column, total):
         last_day_of_month = df['Dias'].max()
         monthly_total = df.loc[df['Dias'] == last_day_of_month, total_column].values[0]
+        if total == 0:
+            return 0
         return (monthly_total / total) * 100
 
     # Função para obter o valor acumulado mensal
