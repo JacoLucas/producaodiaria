@@ -5,7 +5,6 @@ import plotly.express as px
 import pandas as pd
 import requests
 from io import BytesIO
-import calendar
 import os
 
 app = dash.Dash(__name__)
@@ -127,6 +126,9 @@ def update_charts(selected_month, selected_services, obra_name):
         if f'prev acum {i}' not in df.columns or df[f'prev acum {i}'].isna().all():
             df[f'prev acum {i}'] = 0  # Adicionar coluna com valor 0 se não existir ou estiver vazia
 
+        if f'prod acum {i}' not in df.columns or df[f'prod acum {i}'].isna().all():
+            df[f'prod acum {i}'] = 0  # Adicionar coluna com valor 0 se não existir ou estiver vazia
+
     # Transformar dados em formato longo para facilitar a manipulação
     df_long = df.melt(id_vars=['Dias', 'Mês'], value_vars=list(activity_labels.keys()), 
                       var_name='Serviço', value_name='Produção')
@@ -143,7 +145,7 @@ def update_charts(selected_month, selected_services, obra_name):
         coluna = f'prev acum {i}'
         total_prev = df[coluna].dropna()
         if not total_prev.empty:
-            totals[activity_labels[f'prod diaria {i}']] = total_prev.iloc[-1]
+            totals[activity_labels[f'prod diaria {i}']] = float(total_prev.iloc[-1])  # Garantir que o total é float
 
     # Função para calcular a porcentagem relativa prevista para o mês
     def calculate_monthly_percentage(df, total_column, total):
@@ -191,7 +193,7 @@ def update_charts(selected_month, selected_services, obra_name):
         prod_acum_column = f'Prod Acum {service_index.split()[-1]}'
         prod_acum_value = get_monthly_value(df_filtered, prod_acum_column)
         
-        # Dados para o gráfico de barras em porcentagem relativa
+                # Dados para o gráfico de barras em porcentagem relativa
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
         data.append({'Serviço': service_label, 'Tipo': 'Previsto Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
         data.append({'Serviço': service_label, 'Tipo': 'Realizado Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
