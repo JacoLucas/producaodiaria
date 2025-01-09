@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 from io import BytesIO
 import calendar
+import os
 
 app = dash.Dash(__name__)
 app.title = 'Análise de Produção Diária'
