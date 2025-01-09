@@ -170,6 +170,10 @@ def update_charts(selected_month, selected_services, obra_name):
     df_filtered = df_long[df_long['Mês'] == selected_period]
     
     # Atualizar o gráfico de linhas
+    # Preencher valores ausentes com zero
+    df_filtered = df_filtered.pivot(index='Dias', columns='Serviço', values='Produção').fillna(0).reset_index()
+    df_filtered = df_filtered.melt(id_vars=['Dias'], value_vars=df_filtered.columns[1:], var_name='Serviço', value_name='Produção')
+    
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
                        title=f'Produção Diária - {selected_month}',
