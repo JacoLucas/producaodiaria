@@ -6,3 +6,4 @@ gunicorn
 openpyxl
 plotly.express
 requests
+os
