@@ -21,7 +21,9 @@ def get_data_from_github(url):
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        return pd.read_excel(BytesIO(response.content))
+        df = pd.read_excel(BytesIO(response.content))
+        df = df.replace(regex=r'[^0-9.]', value=0)  # Substituir caracteres especiais por 0
+        return df
     except requests.exceptions.RequestException as e:
         print(f"Erro ao carregar o arquivo: {e}")
         return pd.DataFrame()  # Retorna um DataFrame vazio em caso de erro
@@ -132,17 +134,19 @@ def update_charts(selected_month, selected_services, obra_name):
     df_long = df.melt(id_vars=['Dias', 'Mês'], value_vars=list(activity_labels.keys()), 
                       var_name='Serviço', value_name='Produção')
     df_long['Serviço'] = df_long['Serviço'].map(activity_labels)
-
+    
     # Adicionar colunas de produção acumulada ao DataFrame longo
     for i in range(1, 6):
         df_long[f'Prev Acum {i}'] = df[f'prev acum {i}']
         df_long[f'Prod Acum {i}'] = df[f'prod acum {i}']
 
+    df_long = df_long.fillna(0)
+    
     # Obter o total previsto para cada serviço (última célula não nula da coluna 'Prev Acum')
     totals = {}
     for i in range(1, 6):
         coluna = f'prev acum {i}'
-        total_prev = df[coluna].dropna()
+        total_prev = df[coluna].dropna().replace(regex=r'[^0-9.]', value=0)  # Substituir caracteres especiais por 0
         if not total_prev.empty:
             totals[activity_labels[f'prod diaria {i}']] = float(total_prev.iloc[-1])  # Garantir que o total é float
 
@@ -173,7 +177,7 @@ def update_charts(selected_month, selected_services, obra_name):
     # Atualizar o gráfico de linhas
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
-                       title=f'Produção Diária - {selected_month}',
+                       title=f'Produção Diária {obra_name} - {selected_month}',
                        labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
 
     # Atualizar o gráfico de barras
@@ -188,7 +192,7 @@ def update_charts(selected_month, selected_services, obra_name):
         prod_acum_column = f'Prod Acum {service_index.split()[-1]}'
         prod_acum_value = get_monthly_value(df_filtered, prod_acum_column)
         
-                # Dados para o gráfico de barras em porcentagem relativa
+        # Dados para o gráfico de barras em porcentagem relativa
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
         data.append({'Serviço': service_label, 'Tipo': 'Previsto Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
         data.append({'Serviço': service_label, 'Tipo': 'Realizado Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
@@ -199,7 +203,7 @@ def update_charts(selected_month, selected_services, obra_name):
     
     df_chart = pd.DataFrame(data)
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
-                     title=f'Previsão de Produção - {selected_month}', 
+                     title=f'Produção Mensal {obra_name} - {selected_month}', 
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Tipo de Serviço'},
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
