@@ -195,11 +195,11 @@ def update_charts(selected_month, selected_services, obra_name):
         # Dados para o gráfico de barras em porcentagem relativa
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
         data.append({'Serviço': service_label, 'Tipo': 'Previsto Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
-        data.append({'Serviço': service_label, 'Tipo': 'Realizado Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
+        data.append({'Serviço': service_label, 'Tipo': 'Realizado Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
 
         # Dados para a tabela com valores reais
         table_data.append({'Serviço': service_label, 'Total Previsto': total, 
-                           'Previsto Mensal': prev_acum_value, 'Realizado Mensal': prod_acum_value})
+                           'Previsto Mensal': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
     
     df_chart = pd.DataFrame(data)
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
@@ -208,7 +208,7 @@ def update_charts(selected_month, selected_services, obra_name):
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
                          'Previsto Mensal': '#CC0033',
-                         'Realizado Mensal': '#0066CC'
+                         'Realizado Acumulado': '#0066CC'
                      })
 
     # Função para converter valores para float, tratando células nulas e caracteres especiais
@@ -220,12 +220,12 @@ def update_charts(selected_month, selected_services, obra_name):
     
     # Criar a tabela com os valores reais e bordas nas células
     table_header = [html.Thead(html.Tr([html.Th('Serviço'), html.Th('Total Previsto'), 
-                                        html.Th('Previsto Mensal'), html.Th('Realizado Mensal')]))]
+                                        html.Th('Previsto Mensal'), html.Th('Realizado Acumulado')]))]
     table_body = [html.Tbody([
         html.Tr([html.Td(row['Serviço'], style={'border': '1px solid black'}), 
                  html.Td(f"{safe_float_conversion(row['Total Previsto']):.4f}", style={'border': '1px solid black'}), 
                  html.Td(f"{safe_float_conversion(row['Previsto Mensal']):.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{safe_float_conversion(row['Realizado Mensal']):.4f}", style={'border': '1px solid black'})])
+                 html.Td(f"{safe_float_conversion(row['Realizado Acumulado']):.4f}", style={'border': '1px solid black'})])
         for row in table_data
     ])]
     table = html.Table(table_header + table_body, style={'width': '100%', 'textAlign': 'center', 'borderCollapse': 'collapse'})
