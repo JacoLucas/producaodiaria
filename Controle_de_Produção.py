@@ -93,7 +93,7 @@ def update_dropdowns(obra_name):
             'prod diaria 2': 'Aterro (m³)',
             'prod diaria 3': 'Rachão (m³)',
             'prod diaria 4': 'Rocha Detonada (ton.)',
-            'prod diaria 5': 'Aplicação Brita 3/4'
+            'prod diaria 5': 'Aplicação Brita 3/4 (ton.)'
         } 
 
     month_options = [{'label': str(month), 'value': str(month)} for month in unique_months]
@@ -137,7 +137,7 @@ def update_charts(selected_month, selected_services, obra_name):
             'prod diaria 2': 'Aterro (m³)',
             'prod diaria 3': 'Rachão (m³)',
             'prod diaria 4': 'Rocha Detonada (ton.)',
-            'prod diaria 5': 'Aplicação Brita 3/4'
+            'prod diaria 5': 'Aplicação Brita 3/4 (ton.)'
         } 
 
     # Verificar se as colunas de produção acumulada existem e têm dados
