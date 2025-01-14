@@ -211,6 +211,11 @@ def update_charts(selected_month, selected_services, obra_name):
                          'Realizado Acumulado': '#0066CC'
                      })
 
+    # Configuração para ocultar 'Total Previsto' inicialmente 
+    for trace in bar_fig.data: 
+        if trace.name == 'Total Previsto': 
+            trace.visible = 'legendonly'
+    
     # Função para converter valores para float, tratando células nulas e caracteres especiais
     def safe_float_conversion(value):
         try:
