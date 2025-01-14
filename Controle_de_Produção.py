@@ -83,7 +83,7 @@ def update_dropdowns(obra_name):
         activity_labels = {
             'prod diaria 1': 'Corte (m³)',
             'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 3': '',
             'prod diaria 4': '',
             'prod diaria 5': ''
         }
@@ -127,7 +127,7 @@ def update_charts(selected_month, selected_services, obra_name):
         activity_labels = {
             'prod diaria 1': 'Corte (m³)',
             'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 3': '',
             'prod diaria 4': '',
             'prod diaria 5': ''
         }
