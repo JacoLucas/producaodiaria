@@ -203,7 +203,7 @@ def update_charts(selected_month, selected_services, obra_name):
     
     df_chart = pd.DataFrame(data)
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
-                     title=f'Produção Mensal {obra_name} - {selected_month}', 
+                     title=f'Produção Acumulada {obra_name} - {selected_month}', 
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Serviço'},
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
