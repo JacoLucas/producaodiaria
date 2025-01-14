@@ -180,6 +180,8 @@ def update_charts(selected_month, selected_services, obra_name):
                        title=f'Produção Diária {obra_name} {selected_month}',
                        labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
 
+    line_fig.update_layout(legend_font_size=14)
+    
     # Atualizar o gráfico de barras
     data = []
     table_data = []
@@ -211,6 +213,8 @@ def update_charts(selected_month, selected_services, obra_name):
                          'Realizado Acumulado': '#0066CC'
                      })
 
+        bar_fig.update_layout(legend_font_size=14)
+    
     # Configuração para ocultar 'Total Previsto' inicialmente 
     for trace in bar_fig.data: 
         if trace.name == 'Total Previsto': 
