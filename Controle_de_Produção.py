@@ -177,7 +177,7 @@ def update_charts(selected_month, selected_services, obra_name):
     # Atualizar o gráfico de linhas
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
-                       title=f'Produção Diária {obra_name} - {selected_month}',
+                       title=f'Produção Diária {obra_name} {selected_month}',
                        labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
 
     # Atualizar o gráfico de barras
@@ -203,7 +203,7 @@ def update_charts(selected_month, selected_services, obra_name):
     
     df_chart = pd.DataFrame(data)
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
-                     title=f'Produção Acumulada {obra_name} - {selected_month}', 
+                     title=f'Produção Acumulada {obra_name} {selected_month}', 
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Serviço'},
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
