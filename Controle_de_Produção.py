@@ -79,13 +79,22 @@ def update_dropdowns(obra_name):
     unique_months = sorted(df['Mês'].unique())
 
     # Dicionário de rótulos para atividades
-    activity_labels = {
-        'prod diaria 1': 'Corte (m³)',
-        'prod diaria 2': 'Aterro (m³)',
-        'prod diaria 3': 'Rachão (m³)',
-        'prod diaria 4': '',
-        'prod diaria 5': ''
-    }
+    if obra_name == 'Obra 500 - Arauco':
+        activity_labels = {
+            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 4': '',
+            'prod diaria 5': ''
+        }
+    else:
+        activity_labels = {
+            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 4': 'Rocha Detonada (ton.)',
+            'prod diaria 5': 'Aplicação Brita 3/4'
+        } 
 
     month_options = [{'label': str(month), 'value': str(month)} for month in unique_months]
     service_options = [{'label': label, 'value': label} for label in activity_labels.values()]
@@ -114,13 +123,22 @@ def update_charts(selected_month, selected_services, obra_name):
     df['Mês'] = df['Dias'].dt.to_period('M')
 
     # Dicionário de rótulos para atividades
-    activity_labels = {
-        'prod diaria 1': 'Corte (m³)',
-        'prod diaria 2': 'Aterro (m³)',
-        'prod diaria 3': 'Rachão (m³)',
-        'prod diaria 4': '',
-        'prod diaria 5': ''
-    }
+    if obra_name == 'Obra 500 - Arauco':
+        activity_labels = {
+            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 4': '',
+            'prod diaria 5': ''
+        }
+    else:
+        activity_labels = {
+            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': 'Rachão (m³)',
+            'prod diaria 4': 'Rocha Detonada (ton.)',
+            'prod diaria 5': 'Aplicação Brita 3/4'
+        } 
 
     # Verificar se as colunas de produção acumulada existem e têm dados
     for i in range(1, 6):
