@@ -12,8 +12,8 @@ app.title = 'Análise de Produção Diária'
 
 # URLs dos arquivos no GitHub
 file_urls = {
-    'Obra Arauco': 'https://github.com/JacoLucas/producaodiaria/raw/main/Produção_Diária_Obra_Arauco.xlsx',
-    'Obra PG 004': 'https://github.com/JacoLucas/producaodiaria/raw/main/Produção_Diária_Obra_PG_004.xlsx'
+    'Obra 500 - Arauco': 'https://github.com/JacoLucas/producaodiaria/raw/main/Produção_Diária_Obra_Arauco.xlsx',
+    'Obra 004 - Duplicação PR-151': 'https://github.com/JacoLucas/producaodiaria/raw/main/Produção_Diária_Obra_PG_004.xlsx'
 }
 
 # Função para baixar e ler o arquivo Excel do GitHub com controle de exceção
@@ -34,7 +34,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='obra-dropdown',
         options=[{'label': name, 'value': name} for name in file_urls.keys()],
-        value='Obra Arauco',
+        value='Obra 500 - Arauco',
         style={'width': '75%'}
     ),
     dcc.Dropdown(
@@ -83,8 +83,8 @@ def update_dropdowns(obra_name):
         'prod diaria 1': 'Corte (m³)',
         'prod diaria 2': 'Aterro (m³)',
         'prod diaria 3': 'Rachão (m³)',
-        'prod diaria 4': 'Caixas e PVs (un)',
-        'prod diaria 5': 'Escavação de Drenagem'
+        'prod diaria 4': '',
+        'prod diaria 5': ''
     }
 
     month_options = [{'label': str(month), 'value': str(month)} for month in unique_months]
@@ -118,8 +118,8 @@ def update_charts(selected_month, selected_services, obra_name):
         'prod diaria 1': 'Corte (m³)',
         'prod diaria 2': 'Aterro (m³)',
         'prod diaria 3': 'Rachão (m³)',
-        'prod diaria 4': 'Caixas e PVs (un)',
-        'prod diaria 5': 'Escavação de Drenagem'
+        'prod diaria 4': '',
+        'prod diaria 5': ''
     }
 
     # Verificar se as colunas de produção acumulada existem e têm dados
@@ -194,12 +194,12 @@ def update_charts(selected_month, selected_services, obra_name):
         
         # Dados para o gráfico de barras em porcentagem relativa
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
-        data.append({'Serviço': service_label, 'Tipo': 'Previsto Mensal', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
+        data.append({'Serviço': service_label, 'Tipo': 'Previsto Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
         data.append({'Serviço': service_label, 'Tipo': 'Realizado Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
 
         # Dados para a tabela com valores reais
         table_data.append({'Serviço': service_label, 'Total Previsto': total, 
-                           'Previsto Mensal': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
+                           'Previsto Acumulado': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
     
     df_chart = pd.DataFrame(data)
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
@@ -207,7 +207,7 @@ def update_charts(selected_month, selected_services, obra_name):
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Serviço'},
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
-                         'Previsto Mensal': '#CC0033',
+                         'Previsto Acumulado': '#CC0033',
                          'Realizado Acumulado': '#0066CC'
                      })
 
@@ -220,11 +220,11 @@ def update_charts(selected_month, selected_services, obra_name):
     
     # Criar a tabela com os valores reais e bordas nas células
     table_header = [html.Thead(html.Tr([html.Th('Serviço'), html.Th('Total Previsto'), 
-                                        html.Th('Previsto Mensal'), html.Th('Realizado Acumulado')]))]
+                                        html.Th('Previsto Acumulado'), html.Th('Realizado Acumulado')]))]
     table_body = [html.Tbody([
         html.Tr([html.Td(row['Serviço'], style={'border': '1px solid black'}), 
                  html.Td(f"{safe_float_conversion(row['Total Previsto']):.4f}", style={'border': '1px solid black'}), 
-                 html.Td(f"{safe_float_conversion(row['Previsto Mensal']):.4f}", style={'border': '1px solid black'}), 
+                 html.Td(f"{safe_float_conversion(row['Previsto Acumulado']):.4f}", style={'border': '1px solid black'}), 
                  html.Td(f"{safe_float_conversion(row['Realizado Acumulado']):.4f}", style={'border': '1px solid black'})])
         for row in table_data
     ])]
