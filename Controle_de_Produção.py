@@ -281,6 +281,11 @@ def update_charts(selected_month, selected_services, obra_name):
     for trace in bar_fig.data: 
         if trace.name == 'Total Previsto': 
             trace.visible = 'legendonly'
+
+    bar_fig.update_layout(
+        xaxis= dict(
+            tickfont= dict(size= 14))
+    )
     
     # Função para converter valores para float, tratando células nulas e caracteres especiais
     def safe_float_conversion(value):
