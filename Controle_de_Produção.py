@@ -70,31 +70,37 @@ def update_dropdowns(obra_name):
     # Verificar se o DataFrame está vazio
     if df.empty:
         return [], [], None, []
-    
+
+    # Dicionário de rótulos para atividades
+    if obra_name == 'Obra 500 - Arauco':
+        activity_labels = {
+            'prod diaria 1': 'Escavação (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': '',
+            'prod diaria 4': '',
+            'prod diaria 5': '',
+            'prod diaria 6': '',
+            'prod diaria 7': '',
+            'prod diaria 8': ''
+        }
+    else:
+        activity_labels = {
+            'prod diaria 1': 'Escavação (m³)',
+            'prod diaria 2': 'Aterro (m³)',
+            'prod diaria 3': 'Macadame (m³)',
+            'prod diaria 4': 'Brita graduada (m³)',
+            'prod diaria 5': 'C.B.U.Q. (ton.)',
+            'prod diaria 6': 'Muro de Escama (m²)',
+            'prod diaria 7': 'Aterro com Fita Metálica (m³)',
+            'prod diaria 8': 'Barreira New Jersey (m)'
+        }
+
     # Converter a coluna 'Dias' para datetime e extrair os meses
     df['Dias'] = pd.to_datetime(df['Dias'])
     df['Mês'] = df['Dias'].dt.to_period('M')
 
     # Obter os meses únicos presentes na coluna 'Dias'
     unique_months = sorted(df['Mês'].unique())
-
-    # Dicionário de rótulos para atividades
-    if obra_name == 'Obra 500 - Arauco':
-        activity_labels = {
-            'prod diaria 1': 'Corte (m³)',
-            'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': '',
-            'prod diaria 4': '',
-            'prod diaria 5': ''
-        }
-    else:
-        activity_labels = {
-            'prod diaria 1': 'Corte (m³)',
-            'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': 'Rachão (m³)',
-            'prod diaria 4': 'Rocha Detonada (ton.)',
-            'prod diaria 5': 'Aplicação Brita 3/4 (ton.)'
-        } 
 
     month_options = [{'label': str(month), 'value': str(month)} for month in unique_months]
     service_options = [{'label': label, 'value': label} for label in activity_labels.values()]
@@ -117,52 +123,61 @@ def update_charts(selected_month, selected_services, obra_name):
     # Verificar se o DataFrame está vazio
     if df.empty:
         return {}, {}, None
-    
-    # Converter a coluna 'Dias' para datetime e extrair os meses
-    df['Dias'] = pd.to_datetime(df['Dias'])
-    df['Mês'] = df['Dias'].dt.to_period('M')
 
     # Dicionário de rótulos para atividades
     if obra_name == 'Obra 500 - Arauco':
         activity_labels = {
-            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 1': 'Escavação (m³)',
             'prod diaria 2': 'Aterro (m³)',
             'prod diaria 3': '',
             'prod diaria 4': '',
-            'prod diaria 5': ''
+            'prod diaria 5': '',
+            'prod diaria 6': '',
+            'prod diaria 7': '',
+            'prod diaria 8': ''
         }
     else:
         activity_labels = {
-            'prod diaria 1': 'Corte (m³)',
+            'prod diaria 1': 'Escavação (m³)',
             'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': 'Rachão (m³)',
-            'prod diaria 4': 'Rocha Detonada (ton.)',
-            'prod diaria 5': 'Aplicação Brita 3/4 (ton.)'
+            'prod diaria 3': 'Macadame (m³)',
+            'prod diaria 4': 'Brita graduada (m³)',
+            'prod diaria 5': 'C.B.U.Q. (ton.)',
+            'prod diaria 6': 'Muro de Escama (m²)',
+            'prod diaria 7': 'Aterro com Fita Metálica (m³)',
+            'prod diaria 8': 'Barreira New Jersey (m)'
         } 
 
+    required_columns = list(activity_labels.keys())
+    for col in required_columns:
+        if col not in df.columns:
+            df[col] = 0
+
+    # Converter a coluna 'Dias' para datetime e extrair os meses
+    df['Dias'] = pd.to_datetime(df['Dias'])
+    df['Mês'] = df['Dias'].dt.to_period('M')
+
     # Verificar se as colunas de produção acumulada existem e têm dados
-    for i in range(1, 6):
+    for i in range(1, 9):
         if f'prev acum {i}' not in df.columns or df[f'prev acum {i}'].isna().all():
             df[f'prev acum {i}'] = 0  # Adicionar coluna com valor 0 se não existir ou estiver vazia
-
         if f'prod acum {i}' not in df.columns or df[f'prod acum {i}'].isna().all():
             df[f'prod acum {i}'] = 0  # Adicionar coluna com valor 0 se não existir ou estiver vazia
 
     # Transformar dados em formato longo para facilitar a manipulação
-    df_long = df.melt(id_vars=['Dias', 'Mês'], value_vars=list(activity_labels.keys()), 
-                      var_name='Serviço', value_name='Produção')
+    df_long = df.melt(id_vars=['Dias', 'Mês'], value_vars=required_columns, var_name='Serviço', value_name='Produção')
     df_long['Serviço'] = df_long['Serviço'].map(activity_labels)
     
     # Adicionar colunas de produção acumulada ao DataFrame longo
-    for i in range(1, 6):
+    for i in range(1, 9):
         df_long[f'Prev Acum {i}'] = df[f'prev acum {i}']
         df_long[f'Prod Acum {i}'] = df[f'prod acum {i}']
 
     df_long = df_long.fillna(0)
-    
+
     # Obter o total previsto para cada serviço (última célula não nula da coluna 'Prev Acum')
     totals = {}
-    for i in range(1, 6):
+    for i in range(1, 9):
         coluna = f'prev acum {i}'
         total_prev = df[coluna].dropna().replace(regex=r'[^0-9.]', value=0)  # Substituir caracteres especiais por 0
         if not total_prev.empty:
@@ -201,25 +216,58 @@ def update_charts(selected_month, selected_services, obra_name):
     # Atualizar o gráfico de barras
     data = []
     table_data = []
+
+    print("Selected Services:", selected_services)
+    print("Activity Labels:", activity_labels)
+
+    # Verificar e inicializar colunas ausentes
+    for i in range(1, 9):
+        prev_acum_column = f'Prev Acum {i}'
+        prod_acum_column = f'Prod Acum {i}'
+        if prev_acum_column not in df.columns:
+            df[prev_acum_column] = 0
+        if prod_acum_column not in df.columns:
+            df[prod_acum_column] = 0
+
+    print("DataFrame columns after initialization:", df.columns)
+
     for service_label in selected_services:
-        service_index = [key for key, value in activity_labels.items() if value == service_label][0]
+        service_index = [key for key, value in activity_labels.items() if value == service_label]
+        
+        # Verificar se o serviço está na lista
+        if not service_index:
+            print(f"Service '{service_label}' not found in activity_labels.")
+            continue
+
+        service_index = service_index[0]
         prev_acum_column = f'Prev Acum {service_index.split()[-1]}'
+        prod_acum_column = f'Prod Acum {service_index.split()[-1]}'
+        
+        # Garantir que as colunas estão no DataFrame
+        if prev_acum_column not in df.columns or prod_acum_column not in df.columns:
+            print(f"Columns '{prev_acum_column}' or '{prod_acum_column}' not found in DataFrame.")
+            continue
+
         total = totals[service_label]
         prev_acum_value = get_monthly_value(df_filtered, prev_acum_column)
-        
-        prod_acum_column = f'Prod Acum {service_index.split()[-1]}'
         prod_acum_value = get_monthly_value(df_filtered, prod_acum_column)
         
-        # Dados para o gráfico de barras em porcentagem relativa
+        print(f"Processing service: {service_label}")
+        print(f"Service index: {service_index}")
+        print(f"Total: {total}, Prev Acum Value: {prev_acum_value}, Prod Acum Value: {prod_acum_value}")
+        
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
         data.append({'Serviço': service_label, 'Tipo': 'Previsto Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
         data.append({'Serviço': service_label, 'Tipo': 'Realizado Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
 
-        # Dados para a tabela com valores reais
         table_data.append({'Serviço': service_label, 'Total Previsto': total, 
-                           'Previsto Acumulado': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
-    
+                        'Previsto Acumulado': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
+
+    print("Final data list:", data)
     df_chart = pd.DataFrame(data)
+    print(df_chart)
+
+
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
                      title=f'Produção Acumulada {obra_name} {selected_month}', 
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Serviço'},
