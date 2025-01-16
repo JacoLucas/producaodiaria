@@ -50,7 +50,9 @@ app.layout = html.Div([
         value=[],
         style={'width': '75%'}
     ),
+    html.H2('Produção Diária'),
     dcc.Graph(id='line-chart'),
+    html.H2('Produção Acumulada'),
     dcc.Graph(id='bar-chart'),
     html.Div(id='table-container', style={'width': '60%', 'margin': '0 auto'})
 ])
@@ -210,7 +212,7 @@ def update_charts(selected_month, selected_services, obra_name):
     # Atualizar o gráfico de linhas
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
-                       title=f'Produção Diária {obra_name} {selected_month}',
+                       title=f'{obra_name} {selected_month}',
                        labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
 
     # Atualizar o gráfico de barras
@@ -269,7 +271,7 @@ def update_charts(selected_month, selected_services, obra_name):
 
 
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
-                     title=f'Produção Acumulada {obra_name} {selected_month}', 
+                     title=f'{obra_name} {selected_month}', 
                      labels={'Valor': 'Porcentagem (%)', 'Serviço': 'Serviço'},
                      color_discrete_map={
                          'Total Previsto': '#FFCC00',
@@ -281,12 +283,12 @@ def update_charts(selected_month, selected_services, obra_name):
     for trace in bar_fig.data: 
         if trace.name == 'Total Previsto': 
             trace.visible = 'legendonly'
-
+    
     bar_fig.update_layout(
         xaxis= dict(
             tickfont= dict(size= 14))
     )
-    
+
     # Função para converter valores para float, tratando células nulas e caracteres especiais
     def safe_float_conversion(value):
         try:
@@ -304,8 +306,8 @@ def update_charts(selected_month, selected_services, obra_name):
                  html.Td(f"{safe_float_conversion(row['Realizado Acumulado']):.4f}", style={'border': '1px solid black'})])
         for row in table_data
     ])]
+    
     table = html.Table(table_header + table_body, style={'width': '100%', 'textAlign': 'center', 'borderCollapse': 'collapse'})
-
     return line_fig, bar_fig, table
 
 if __name__ == "__main__":
