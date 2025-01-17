@@ -31,6 +31,11 @@ def get_data_from_github(url):
 # Dropdown para selecionar a obra
 app.layout = html.Div([
     html.H1('Análise da Produção Diária'),
+    
+    ######### ATUALIZAR SEMPRE #########
+    html.H3('Atualizado dia 17/01/25 - 15:24'), 
+    ######### ATUALIZAR SEMPRE #########
+
     dcc.Dropdown(
         id='obra-dropdown',
         options=[{'label': name, 'value': name} for name in file_urls.keys()],
@@ -214,6 +219,14 @@ def update_charts(selected_month, selected_services, obra_name):
                        x='Dias', y='Produção', color='Serviço', 
                        title=f'{obra_name} {selected_month}',
                        labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
+    line_fig.update_layout(
+        xaxis_title=f'{selected_month}',
+        xaxis=dict(
+            tickmode='linear',
+            dtick='D1',
+            tickformat='%d'
+        )
+    )
 
     # Atualizar o gráfico de barras
     data = []
