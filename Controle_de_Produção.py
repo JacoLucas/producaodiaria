@@ -221,7 +221,9 @@ def update_charts(selected_month, selected_services, obra_name):
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
                        title=f'{obra_name} {selected_month}',
-                       labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'})
+                       labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'},
+                       hover_data={'Obs': True}
+                      )
     line_fig.update_layout(
         xaxis_title=f'{selected_month}',
         xaxis=dict(
