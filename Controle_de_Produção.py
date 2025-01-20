@@ -213,6 +213,9 @@ def update_charts(selected_month, selected_services, obra_name):
 
     selected_period = pd.Period(selected_month, 'M')
     df_filtered = df_long[df_long['Mês'] == selected_period]
+
+    df_filtered['Obs'] = df['Obs']
+    df_filtered['Obs'] = df_filtered['Obs'].fillna(0)
     
     # Atualizar o gráfico de linhas
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
