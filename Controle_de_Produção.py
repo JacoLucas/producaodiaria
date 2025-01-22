@@ -2,6 +2,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 import requests
 from io import BytesIO
@@ -9,6 +10,9 @@ import os
 
 app = dash.Dash(__name__)
 app.title = 'Análise de Produção Diária'
+
+# URL direta para a imagem no GitHub
+image_url = 'https://github.com/JacoLucas/producaodiaria/raw/main/LOGO MLC Infra.jpg'
 
 # URLs dos arquivos no GitHub
 file_urls = {
@@ -28,12 +32,15 @@ def get_data_from_github(url):
         print(f"Erro ao carregar o arquivo: {e}")
         return pd.DataFrame()  # Retorna um DataFrame vazio em caso de erro
 
-# Dropdown para selecionar a obra
+# Layout da página
 app.layout = html.Div([
+    html.Div([
+        html.Img(src=image_url, style={'position': 'absolute', 'top': '10px', 'right': '10px', 'width': '220px', 'height': '180px'})
+    ]),
     html.H1('Análise da Produção Diária'),
     
     ######### ATUALIZAR SEMPRE #########
-    html.H3('Atualizado dia 17/01/25 - 15:24'), 
+    html.H3('Atualizado dia 22/01/25 - 14:18'), 
     ######### ATUALIZAR SEMPRE #########
 
     dcc.Dropdown(
@@ -221,24 +228,37 @@ def update_charts(selected_month, selected_services, obra_name):
     line_fig = px.line(df_filtered[df_filtered['Serviço'].isin(selected_services)], 
                        x='Dias', y='Produção', color='Serviço', 
                        title=f'{obra_name} {selected_month}',
-                       labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'},
-                       hover_data={'Obs': True}
+                       labels={'Produção': 'Produção', 'Dias': 'Período', 'Serviço': 'Serviço'}
                       )
+    # Adicionando scatter plot para os pontos onde Obs != 0
+    scatter_points = go.Scatter(
+        x=df_filtered[df_filtered['Obs'] != 0]['Dias'],
+        y=[0] * len(df_filtered[df_filtered['Obs'] != 0]),
+        mode='markers',
+        name='Observação',
+        marker=dict(color='red', size=10),
+        text=df_filtered[df_filtered['Obs'] != 0]['Obs'],
+        textposition='top center',
+        hovertext=df_filtered[df_filtered['Obs'] != 0]['Obs']
+    )
+
+    # Atualizando o layout do gráfico
+    line_fig.add_trace(scatter_points)
     line_fig.update_layout(
         xaxis_title=f'{selected_month}',
         xaxis=dict(
             tickmode='linear',
             dtick='D1',
             tickformat='%d'
+        ),
+        yaxis=dict(
+            range=[0, max(df_filtered[['Produção']].max()) + 5]
         )
     )
 
     # Atualizar o gráfico de barras
     data = []
     table_data = []
-
-    print("Selected Services:", selected_services)
-    print("Activity Labels:", activity_labels)
 
     # Verificar e inicializar colunas ausentes
     for i in range(1, 9):
@@ -248,8 +268,6 @@ def update_charts(selected_month, selected_services, obra_name):
             df[prev_acum_column] = 0
         if prod_acum_column not in df.columns:
             df[prod_acum_column] = 0
-
-    print("DataFrame columns after initialization:", df.columns)
 
     for service_label in selected_services:
         service_index = [key for key, value in activity_labels.items() if value == service_label]
@@ -272,10 +290,6 @@ def update_charts(selected_month, selected_services, obra_name):
         prev_acum_value = get_monthly_value(df_filtered, prev_acum_column)
         prod_acum_value = get_monthly_value(df_filtered, prod_acum_column)
         
-        print(f"Processing service: {service_label}")
-        print(f"Service index: {service_index}")
-        print(f"Total: {total}, Prev Acum Value: {prev_acum_value}, Prod Acum Value: {prod_acum_value}")
-        
         data.append({'Serviço': service_label, 'Tipo': 'Total Previsto', 'Valor': 100})
         data.append({'Serviço': service_label, 'Tipo': 'Previsto Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prev_acum_column, total)})
         data.append({'Serviço': service_label, 'Tipo': 'Realizado Acumulado', 'Valor': calculate_monthly_percentage(df_filtered, prod_acum_column, total)})
@@ -283,9 +297,8 @@ def update_charts(selected_month, selected_services, obra_name):
         table_data.append({'Serviço': service_label, 'Total Previsto': total, 
                         'Previsto Acumulado': prev_acum_value, 'Realizado Acumulado': prod_acum_value})
 
-    print("Final data list:", data)
     df_chart = pd.DataFrame(data)
-    print(df_chart)
+
 
 
     bar_fig = px.bar(df_chart, x='Serviço', y='Valor', color='Tipo', barmode='group', 
