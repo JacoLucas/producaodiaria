@@ -90,12 +90,13 @@ def update_dropdowns(obra_name):
         activity_labels = {
             'prod diaria 1': 'Escavação (m³)',
             'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': '',
-            'prod diaria 4': '',
-            'prod diaria 5': '',
-            'prod diaria 6': '',
-            'prod diaria 7': '',
-            'prod diaria 8': ''
+            'prod diaria 3': 'Tubo em Concreto (m)',
+            'prod diaria 4': 'Blocos de Concreto (m²)',
+            'prod diaria 5': 'Sarjeta de Concreto (m)',
+            'prod diaria 6': 'SMC (m³)',
+            'prod diaria 7': 'Drenos Longitudinais (m)',
+            'prod diaria 8': 'CBUQ / Binder (m³)',
+            'prod diaria 9': 'Supressão Vegetal (m²)'
         }
     else:
         activity_labels = {
@@ -106,7 +107,8 @@ def update_dropdowns(obra_name):
             'prod diaria 5': 'C.B.U.Q. (ton.)',
             'prod diaria 6': 'Muro de Escama (m²)',
             'prod diaria 7': 'Aterro com Fita Metálica (m³)',
-            'prod diaria 8': 'Barreira New Jersey (m)'
+            'prod diaria 8': 'Barreira New Jersey (m)',
+            'prod diaria 9': ''
         }
 
     # Converter a coluna 'Dias' para datetime e extrair os meses
@@ -143,12 +145,13 @@ def update_charts(selected_month, selected_services, obra_name):
         activity_labels = {
             'prod diaria 1': 'Escavação (m³)',
             'prod diaria 2': 'Aterro (m³)',
-            'prod diaria 3': '',
-            'prod diaria 4': '',
-            'prod diaria 5': '',
-            'prod diaria 6': '',
-            'prod diaria 7': '',
-            'prod diaria 8': ''
+            'prod diaria 3': 'Tubo em Concreto (m)',
+            'prod diaria 4': 'Blocos de Concreto (m²)',
+            'prod diaria 5': 'Sarjeta de Concreto (m)',
+            'prod diaria 6': 'SMC (m³)',
+            'prod diaria 7': 'Drenos Longitudinais (m)',
+            'prod diaria 8': 'CBUQ / Binder (m³)',
+            'prod diaria 9': 'Supressão Vegetal (m²)'
         }
     else:
         activity_labels = {
@@ -159,8 +162,9 @@ def update_charts(selected_month, selected_services, obra_name):
             'prod diaria 5': 'C.B.U.Q. (ton.)',
             'prod diaria 6': 'Muro de Escama (m²)',
             'prod diaria 7': 'Aterro com Fita Metálica (m³)',
-            'prod diaria 8': 'Barreira New Jersey (m)'
-        } 
+            'prod diaria 8': 'Barreira New Jersey (m)',
+            'prod diaria 9': ''
+        }
 
     required_columns = list(activity_labels.keys())
     for col in required_columns:
