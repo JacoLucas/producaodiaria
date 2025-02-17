@@ -40,7 +40,7 @@ app.layout = html.Div([
     html.H1('Análise da Produção Diária'),
     
     ######### ATUALIZAR SEMPRE #########
-    html.H3('Atualizado dia 12/02/2025 - 14:16'), 
+    html.H3('Atualizado dia 17/02/2025 - 13:04'), 
     ######### ATUALIZAR SEMPRE #########
 
     dcc.Dropdown(
